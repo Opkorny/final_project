@@ -1,0 +1,4 @@
+Kivy~=1.11.1
+pip~=20.2.4
+setuptools~=50.3.2
+docutils~=0.16

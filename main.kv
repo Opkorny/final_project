@@ -1,0 +1,40 @@
+<Boat>
+    size_hint: None, None
+    size: 5, 5
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 100/255.0,50/255.0,0,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Start>
+    size_hint: None, None
+    size: 50, 50
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 1,0,0,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<Checkpoint>
+    size_hint: None, None
+    size: 40, 40
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 0,0,0,.9
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PathFinder>:
+    id: "finder"
+
+<MainApp>:
+    Label:
+        Color:
+            rgba: 0,0,0,1
