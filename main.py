@@ -17,6 +17,7 @@ import math
 
 # třida Boat vytvoří objekt "lodě" 
 class Boat(Widget):
+    id = NumericProperty(0)
     velocity_x = NumericProperty(0)
     velocity_y = NumericProperty(0)
     velocity = ReferenceListProperty(velocity_x, velocity_y)
@@ -51,8 +52,8 @@ class PathFinder(FloatLayout):
     boats = ListProperty(None)
     pos_x = NumericProperty(0)
     pos_y = NumericProperty(0)
-    rockCount = NumericProperty(10)
-    boatCount = NumericProperty(100)
+    rockCount = NumericProperty(20)
+    boatCount = NumericProperty(200)
     # na začátku vytvoří určité objekty
     def __init__(self, **kwargs):
         super(PathFinder, self).__init__(**kwargs)
@@ -106,6 +107,7 @@ class PathFinder(FloatLayout):
             boat.center_y = self.start.center_y
             angle = random.randint(0, 360)
             boat.velocity = Vector(2,0).rotate(angle)
+            boat.id = i+1
             self.boats.append(boat)
             self.add_widget(boat)
 
@@ -144,7 +146,11 @@ class PathFinder(FloatLayout):
         start_ = Start()
         start_.center_x=self.start.center_x
         start_.center_y=self.start.center_y
+        finish_ = Finish()
+        finish_.center_x=self.finish.center_x
+        finish_.center_y=self.finish.center_y
         self.add_widget(start_)
+        self.add_widget(finish_)
         self.boats=[]
         self.add_boat()
 
@@ -156,7 +162,9 @@ class PathFinder(FloatLayout):
                 b.velocity_x *= -1
             if(b.y<0 or b.y>Window.height-5):
                 b.velocity_y *= -1
-                pass
+            if (math.sqrt((b.center_x-self.finish.center_x)**2+(b.center_y-self.finish.center_y)**2)<25):
+                print(f"boat number {b.id} has finished!")
+                self.boats.remove(b)
             for c in self.rocks:
                 if (math.sqrt((b.center_x-c.center_x)**2+(b.center_y-c.center_y)**2)<(c.size[0]+5)/2):
                     self.boats.remove(b)
@@ -169,14 +177,14 @@ class MainApp(App):
         self.title = 'PathFinder'
         self.app = PathFinder()
         rootWindow = GridLayout(cols=6, row_force_default=True, row_default_height=40,spacing=10, padding=20)
-        self.check_input = TextInput(text=f"{self.app.rockCount}",multiline=False,font_size=20,input_filter='int')
-        check_label = Label(text="Rocks (1-20): ",font_size=20,color=(0,0,0,1))
+        self.rock_input = TextInput(text=f"{self.app.rockCount}",multiline=False,font_size=20,input_filter='int')
+        rock_label = Label(text="Rocks (1-50): ",font_size=20,color=(0,0,0,1))
         self.boat_input = TextInput(text=f"{self.app.boatCount}",multiline=False,font_size=20,input_filter='int')
-        boat_label = Label(text="Boats (1+): ",font_size=20,color=(0,0,0,1))
+        boat_label = Label(text="Boats (1-1000): ",font_size=20,color=(0,0,0,1))
         submitBtn = Button(text='submit',on_release=self.submit)
         self.resetBtn = Button(text='reset',on_release=self.reset)
-        rootWindow.add_widget(check_label)
-        rootWindow.add_widget(self.check_input)
+        rootWindow.add_widget(rock_label)
+        rootWindow.add_widget(self.rock_input)
         rootWindow.add_widget(boat_label)
         rootWindow.add_widget(self.boat_input)
         rootWindow.add_widget(submitBtn)
@@ -187,17 +195,19 @@ class MainApp(App):
     
     # funkce vyvolaná tlačítkem submitBtn -> ubere/přídá objekty podle hodnot zadaných uživatelem
     def submit(self,obj):
-        if (int(self.check_input.text) < 1):
+        if (int(self.rock_input.text) < 1):
             self.app.rockCount = 1
-        elif (int(self.check_input.text) > 20):
-            self.app.rockCount = 20
+        elif (int(self.rock_input.text) > 50):
+            self.app.rockCount = 50
         else:
-            self.app.rockCount = int(self.check_input.text)
+            self.app.rockCount = int(self.rock_input.text)
         if (int(self.boat_input.text) < 1):
             self.app.boatCount = 1
+        elif (int(self.boat_input.text) > 1000):
+            self.app.boatCount = 1000
         else:
             self.app.boatCount = int(self.boat_input.text)
-        self.check_input.text = str(self.app.rockCount)
+        self.rock_input.text = str(self.app.rockCount)
         self.boat_input.text = str(self.app.boatCount)
         self.app.draw()
 
