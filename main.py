@@ -129,6 +129,13 @@ class PathFinder(FloatLayout):
             self.random_pos()
             self.validPos(x)
 
+    def ai(self,b):
+        for c in self.rocks:
+            if (math.sqrt((b.center_x +b.velocity_x*20-c.center_x)**2+(b.center_y+b.velocity_y*20-c.center_y)**2)<(c.size[0]+5)/2):
+                angle = random.randint(0, 1) -1
+                b.velocity = Vector(b.velocity_x, b.velocity_y).rotate(angle*20)
+
+
     # zajišťuje překreslení canvasu při přidávání objektů
     def draw(self):
         self.canvas.clear()
@@ -157,6 +164,8 @@ class PathFinder(FloatLayout):
     # zajišťuje pohyb lodí a zjišťuje zda nenarazila do skály
     def update(self, dt):
         for b in self.boats:
+            self.ai(b)
+            #print(b.velocity[0])
             b.move()
             if(b.x<0 or b.x>Window.width-5):
                 b.velocity_x *= -1
