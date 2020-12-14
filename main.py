@@ -1,6 +1,5 @@
 # Importovani
 from kivy.app import App
-from kivy.config import Config
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
@@ -11,9 +10,10 @@ from kivy.core.window import Window
 from kivy.clock import Clock
 from kivy.properties import ListProperty, NumericProperty, ObjectProperty, ReferenceListProperty
 from kivy.vector import Vector
-from kivy.graphics import Color
 import random
 import math
+
+from ai import MyAI
 
 # třida Boat vytvoří objekt "lodě" 
 class Boat(Widget):
@@ -53,7 +53,7 @@ class PathFinder(FloatLayout):
     pos_x = NumericProperty(0)
     pos_y = NumericProperty(0)
     rockCount = NumericProperty(20)
-    boatCount = NumericProperty(200)
+    boatCount = NumericProperty(100)
     # na začátku vytvoří určité objekty
     def __init__(self, **kwargs):
         super(PathFinder, self).__init__(**kwargs)
@@ -63,6 +63,7 @@ class PathFinder(FloatLayout):
         self.add_start()
         self.add_finish()
         self.add_boat()
+        self.ai = MyAI()
     # vygeneruje náhodnou pozici
     def random_pos(self):
         self.pos_x = random.randint(50,Window.width-50)
@@ -130,10 +131,32 @@ class PathFinder(FloatLayout):
             self.validPos(x)
 
     def ai(self,b):
+        right = Vector(b.velocity_x, b.velocity_y).rotate(30)
+        left = Vector(b.velocity_x, b.velocity_y).rotate(-30)
+        f = NumericProperty(0)
+        r = NumericProperty(0)
+        l = NumericProperty(0)
+        d = NumericProperty(0)
+        t = NumericProperty(1)
         for c in self.rocks:
             if (math.sqrt((b.center_x +b.velocity_x*20-c.center_x)**2+(b.center_y+b.velocity_y*20-c.center_y)**2)<(c.size[0]+5)/2):
-                angle = random.randint(0, 1) -1
-                b.velocity = Vector(b.velocity_x, b.velocity_y).rotate(angle*20)
+                f = 1
+            else: f = 0
+            if (math.sqrt((b.center_x +right[0]*20-c.center_x)**2+(b.center_y+right[1]*20-c.center_y)**2)<(c.size[0]+5)/2):
+                r = 1
+            else: r = 0
+            if (math.sqrt((b.center_x +left[0]*20-c.center_x)**2+(b.center_y+left[1]*20-c.center_y)**2)<(c.size[0]+5)/2):
+                l = 1
+            else: l = 0
+            if (math.sqrt((b.center_x-b.velocity_x)**2+(b.center_y-b.velocity_x)**2)<math.sqrt((b.center_x-b.center_x)**2+(b.center_y-b.center_y)**2)):
+                d = 1
+            else: d = 0
+        data=[t,f,r,l,d]
+        prediction = self.ai.predict(data)
+        if prediction < 0:
+            t = 0
+        else: t = 1
+        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(20*prediction)
 
 
     # zajišťuje překreslení canvasu při přidávání objektů
@@ -189,7 +212,7 @@ class MainApp(App):
         self.rock_input = TextInput(text=f"{self.app.rockCount}",multiline=False,font_size=20,input_filter='int')
         rock_label = Label(text="Rocks (1-50): ",font_size=20,color=(0,0,0,1))
         self.boat_input = TextInput(text=f"{self.app.boatCount}",multiline=False,font_size=20,input_filter='int')
-        boat_label = Label(text="Boats (1-1000): ",font_size=20,color=(0,0,0,1))
+        boat_label = Label(text="Boats (1-500): ",font_size=20,color=(0,0,0,1))
         submitBtn = Button(text='submit',on_release=self.submit)
         self.resetBtn = Button(text='reset',on_release=self.reset)
         rootWindow.add_widget(rock_label)
@@ -212,8 +235,8 @@ class MainApp(App):
             self.app.rockCount = int(self.rock_input.text)
         if (int(self.boat_input.text) < 1):
             self.app.boatCount = 1
-        elif (int(self.boat_input.text) > 1000):
-            self.app.boatCount = 1000
+        elif (int(self.boat_input.text) > 500):
+            self.app.boatCount = 500
         else:
             self.app.boatCount = int(self.boat_input.text)
         self.rock_input.text = str(self.app.rockCount)
