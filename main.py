@@ -53,7 +53,7 @@ class PathFinder(FloatLayout):
     pos_x = NumericProperty(0)
     pos_y = NumericProperty(0)
     rockCount = NumericProperty(20)
-    boatCount = NumericProperty(100)
+    boatCount = NumericProperty(1)
     # na začátku vytvoří určité objekty
     def __init__(self, **kwargs):
         super(PathFinder, self).__init__(**kwargs)
@@ -131,34 +131,46 @@ class PathFinder(FloatLayout):
             self.validPos(x)
 
     def ai_method(self,b):
+        n = math.sqrt((b.center_x-self.finish.center_x)**2+(b.center_y-self.finish.center_y)**2)/2
         right = Vector(b.velocity_x, b.velocity_y).rotate(30)
         left = Vector(b.velocity_x, b.velocity_y).rotate(-30)
-        f = 0
-        r = 0
-        l = 0
-        d = 0
-        t = 1
+        self.f = 0
+        self.r = 0
+        self.l = 0
+        self.d = 0
+        self.t = 0
+        self.direction = 0
         for c in self.rocks:
-            if (math.sqrt((b.center_x +b.velocity_x*20-c.center_x)**2+(b.center_y+b.velocity_y*20-c.center_y)**2)<(c.size[0]+5)/2):
-                f = 1
-            else: f = 0
-            if (math.sqrt((b.center_x +right[0]*20-c.center_x)**2+(b.center_y+right[1]*20-c.center_y)**2)<(c.size[0]+5)/2):
-                r = 1
-            else: r = 0
-            if (math.sqrt((b.center_x +left[0]*20-c.center_x)**2+(b.center_y+left[1]*20-c.center_y)**2)<(c.size[0]+5)/2):
-                l = 1
-            else: l = 0
-            if (math.sqrt((b.center_x-b.velocity_x)**2+(b.center_y-b.velocity_x)**2)<math.sqrt((b.center_x-b.center_x)**2+(b.center_y-b.center_y)**2)):
-                d = 1
-            else: d = 0
-        data=[t,f,r,l,d]
+            if (math.sqrt((b.center_x +b.velocity_x*10-c.center_x)**2+(b.center_y+b.velocity_y*10-c.center_y)**2)<(c.size[0]+5)/2):
+                self.f = 1
+                break
+            else: self.f = 0
+        for c in self.rocks:
+            if (math.sqrt((b.center_x +right[0]*10-c.center_x)**2+(b.center_y+right[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
+                self.r = 1
+                break
+            else: self.r = 0
+        for c in self.rocks:
+            if (math.sqrt((b.center_x +left[0]*10-c.center_x)**2+(b.center_y+left[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
+                self.l = 1
+                break
+            else: self.l = 0
+        if (math.sqrt((self.finish.center_x -b.center_x+b.velocity_x*n)**2+(self.finish.center_y-b.center_y+b.velocity_x*n)**2)>=math.sqrt((self.finish.center_x-b.center_x)**2+(self.finish.center_y-b.center_y)**2)):
+            self.d = 1
+        else: self.d = 0
+        data=[self.t,self.f,self.r,self.l,self.d]
+        print(data)
         prediction = self.ai.predict(data)
-        if prediction < 0:
-            t = 0
+        if prediction < -0.5:
+            self.t = 1
+            self.direction = -1
+        elif prediction >0.5:
+            self.t = 0
+            self.direction = 1
         else:
-            t = 1
+            self.direction = 0
         print(prediction)
-        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(20*prediction)
+        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(10*self.direction)
 
 
     # zajišťuje překreslení canvasu při přidávání objektů
