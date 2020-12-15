@@ -130,14 +130,14 @@ class PathFinder(FloatLayout):
             self.random_pos()
             self.validPos(x)
 
-    def ai(self,b):
+    def ai_method(self,b):
         right = Vector(b.velocity_x, b.velocity_y).rotate(30)
         left = Vector(b.velocity_x, b.velocity_y).rotate(-30)
-        f = NumericProperty(0)
-        r = NumericProperty(0)
-        l = NumericProperty(0)
-        d = NumericProperty(0)
-        t = NumericProperty(1)
+        f = 0
+        r = 0
+        l = 0
+        d = 0
+        t = 1
         for c in self.rocks:
             if (math.sqrt((b.center_x +b.velocity_x*20-c.center_x)**2+(b.center_y+b.velocity_y*20-c.center_y)**2)<(c.size[0]+5)/2):
                 f = 1
@@ -155,7 +155,9 @@ class PathFinder(FloatLayout):
         prediction = self.ai.predict(data)
         if prediction < 0:
             t = 0
-        else: t = 1
+        else:
+            t = 1
+        print(prediction)
         b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(20*prediction)
 
 
@@ -187,7 +189,7 @@ class PathFinder(FloatLayout):
     # zajišťuje pohyb lodí a zjišťuje zda nenarazila do skály
     def update(self, dt):
         for b in self.boats:
-            self.ai(b)
+            self.ai_method(b)
             #print(b.velocity[0])
             b.move()
             if(b.x<0 or b.x>Window.width-5):
