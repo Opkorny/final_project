@@ -3,12 +3,12 @@ from tensorflow import keras
 from random import randint
 
 training_inputs = [[0, 0, 0, 0, 0], [0, 0, 0, 0, 1], [0, 0, 0, 1, 0],[0, 0, 0, 1, 1],[0, 0, 1, 0, 0],[0, 0, 1, 0, 1],[0, 0, 1, 1, 0],[0, 0, 1, 1, 1],[0, 1, 0, 0, 0],[0, 1, 0, 0, 1],[0, 1, 0, 1, 0],[0, 1, 0, 1, 1],[0, 1, 1, 0, 0],[0, 1, 1, 0, 1],[0, 1, 1, 1, 0],[0, 1, 1, 1, 1],[1, 0, 0, 0, 0],[1, 0, 0, 0, 1],[1, 0, 0, 1, 0],[1, 0, 0, 1, 1],[1, 0, 1, 0, 0],[1, 0, 1, 0, 1],[1, 0, 1, 1, 0],[1, 0, 1, 1, 1],[1, 1, 0, 0, 0],[1, 1, 0, 0, 1],[1, 1, 0, 1, 0],[1, 1, 0, 1, 1],[1, 1, 1, 0, 0],[1, 1, 1, 0, 1],[1, 1, 1, 1, 0],[1, 1, 1, 1, 1]]
-training_outputs = [[-1],[0],[1],[0],[-1],[0],[0],[0],[-1],[-1],[1],[1],[-1],[-1],[-1],[-1],[1],[0],[1],[0],[-1],[0],[0],[0],[1],[1],[1],[1],[-1],[-1],[1],[1]]
+training_outputs = [[1],[0],[1],[0],[-1],[0],[0],[0],[-1],[-1],[1],[1],[-1],[-1],[-1],[-1],[-1],[0],[1],[0],[-1],[0],[0],[0],[1],[1],[1],[1],[-1],[-1],[1],[1]]
 
 
 class MyAI:
     def __init__(self):
-        self.count = 100000
+        self.count = 2000
         self.model = self.create_model()
         self.create_input()
         self.create_output()
@@ -31,8 +31,13 @@ class MyAI:
         for obj in self.input:
             for i in range(32):
                 if obj[0] == training_inputs[i][0] and obj[1] == training_inputs[i][1] and obj[2] == training_inputs[i][2] and obj[3] == training_inputs[i][3] and obj[4] == training_inputs[i][4]:
-                    self.output.append(training_outputs[i])
-        self.output = np.array(self.output).reshape(self.count,1)
+                    if training_outputs[i][0] == -1:
+                        self.output.append([0, 0, 1])
+                    if training_outputs[i][0] == 0:
+                        self.output.append([0, 1, 0])
+                    if training_outputs[i][0] == 1:
+                        self.output.append([1, 0, 0])
+        self.output = np.array(self.output).reshape(self.count,3)
 
 
 
@@ -41,13 +46,14 @@ class MyAI:
         model.add(keras.layers.Dense(128, activation="relu"))
         model.add(keras.layers.Dense(128, activation="relu"))
         model.add(keras.layers.Dense(128, activation="relu"))
-        model.add(keras.layers.Dense(1, activation="tanh"))
-        model.compile(loss='mean_squared_error', optimizer='adam', metrics=["accuracy"])
+        model.add(keras.layers.Dense(3, activation="softmax"))
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=["accuracy"])
         return model
 
     def train_model(self, data):
-        self.model.fit(data[0], data[1], epochs=3, batch_size=64, shuffle=True)
+        self.model.fit(data[0], data[1], epochs=1, batch_size=32, shuffle=True)
 
     def predict(self, data):
         data = np.array(data).reshape(1, 5)
-        return self.model(data)
+        prediction = self.model(data)
+        return np.argmax(prediction[0])
