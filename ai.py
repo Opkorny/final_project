@@ -51,7 +51,7 @@ class MyAI:
         return model
 
     def train_model(self, data):
-        self.model.fit(data[0], data[1], epochs=1, batch_size=32, shuffle=True)
+        self.model.fit(data[0], data[1], epochs=2, batch_size=32, shuffle=True)
 
     def predict(self, data):
         data = np.array(data).reshape(1, 5)

@@ -38,3 +38,54 @@
     Label:
         Color:
             rgba: 0,0,0,1
+<Boat>
+    size_hint: None, None
+    size: 5, 5
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 100/255.0,50/255.0,0,1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<Start>
+    size_hint: None, None
+    size: 50, 50
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 0,0.7,0,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<Finish>
+    size_hint: None, None
+    size: 50, 50
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 0.7,0,0,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<Rock>
+    size_hint: None, None
+    size: self.size
+    pos: self.pos
+    canvas:
+        Color:
+            rgba: 0.2,0.2,0.2,1
+        Ellipse:
+            pos: self.pos
+            size: self.size
+
+<PathFinder>:
+    id: "finder"
+
+<MainApp>:
+    Label:
+        Color:
+            rgba: 0,0,0,1
