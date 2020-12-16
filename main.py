@@ -53,7 +53,7 @@ class PathFinder(FloatLayout):
     pos_x = NumericProperty(0)
     pos_y = NumericProperty(0)
     rockCount = NumericProperty(20)
-    boatCount = NumericProperty(1)
+    boatCount = NumericProperty(5)
     # na začátku vytvoří určité objekty
     def __init__(self, **kwargs):
         super(PathFinder, self).__init__(**kwargs)
@@ -117,10 +117,10 @@ class PathFinder(FloatLayout):
     def validPos(self, x):
         if (self.pos_y<Window.height-100):
             for c in self.rocks:
-                if (math.sqrt((self.pos_x-c.center_x)**2+(self.pos_y-c.center_y)**2)<c.size[0]):
+                if (math.sqrt((self.pos_x-c.center_x)**2+(self.pos_y-c.center_y)**2)<c.size[0]+10):
                     self.random_pos()
                     self.validPos(x)
-                elif (x and math.sqrt((self.pos_x-self.start.center_x)**2+(self.pos_y-self.start.center_y)**2)<math.sqrt(Window.height**2+Window.width**2)/3):
+                elif (x and math.sqrt((self.pos_x-self.start.center_x)**2+(self.pos_y-self.start.center_y)**2)<math.sqrt(Window.height**2+Window.width**2)/2):
                     self.random_pos()
                     self.validPos(x)
                 else:
@@ -146,17 +146,17 @@ class PathFinder(FloatLayout):
                 break
             else: self.f = 0
         for c in self.rocks:
-            if (math.sqrt((b.center_x +right[0]*10-c.center_x)**2+(b.center_y+right[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +right[0]*8-c.center_x)**2+(b.center_y+right[1]*8-c.center_y)**2)<(c.size[0]+5)/2):
                 self.r = 1
                 break
             else: self.r = 0
         for c in self.rocks:
-            if (math.sqrt((b.center_x +left[0]*10-c.center_x)**2+(b.center_y+left[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +left[0]*8-c.center_x)**2+(b.center_y+left[1]*8-c.center_y)**2)<(c.size[0]+5)/2):
                 self.l = 1
                 break
             else: self.l = 0
         # if math.sqrt((self.finish.center_x -(b.center_x+b.velocity_x))**2+(self.finish.center_y-(b.center_y+b.velocity_x))**2)<math.sqrt((self.finish.center_x-b.center_x)**2+(self.finish.center_y-b.center_y)**2):
-        if abs(Vector(b.velocity).angle((self.finish.center_x - b.center_x, self.finish.center_y - b.center_y))) < 30:
+        if abs(Vector(b.velocity).angle((self.finish.center_x - b.center_x, self.finish.center_y - b.center_y))) < 20:
             self.d = 1
         else: self.d = 0
         print(math.sqrt((self.finish.center_x -(b.center_x+b.velocity_x))**2+(self.finish.center_y-(b.center_y+b.velocity_y))**2)-math.sqrt((self.finish.center_x-b.center_x)**2+(self.finish.center_y-b.center_y)**2))
@@ -172,7 +172,7 @@ class PathFinder(FloatLayout):
         else:
             self.dir = 0
         print(prediction)
-        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(10*self.dir)
+        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(15*self.dir)
 
 
     # zajišťuje překreslení canvasu při přidávání objektů
@@ -228,7 +228,7 @@ class MainApp(App):
         self.rock_input = TextInput(text=f"{self.app.rockCount}",multiline=False,font_size=20,input_filter='int')
         rock_label = Label(text="Rocks (1-50): ",font_size=20,color=(0,0,0,1))
         self.boat_input = TextInput(text=f"{self.app.boatCount}",multiline=False,font_size=20,input_filter='int')
-        boat_label = Label(text="Boats (1-500): ",font_size=20,color=(0,0,0,1))
+        boat_label = Label(text="Boats (1-100): ",font_size=20,color=(0,0,0,1))
         submitBtn = Button(text='submit',on_release=self.submit)
         self.resetBtn = Button(text='reset',on_release=self.reset)
         rootWindow.add_widget(rock_label)
@@ -245,14 +245,14 @@ class MainApp(App):
     def submit(self,obj):
         if (int(self.rock_input.text) < 1):
             self.app.rockCount = 1
-        elif (int(self.rock_input.text) > 50):
-            self.app.rockCount = 50
+        elif (int(self.rock_input.text) > 100):
+            self.app.rockCount = 100
         else:
             self.app.rockCount = int(self.rock_input.text)
         if (int(self.boat_input.text) < 1):
             self.app.boatCount = 1
-        elif (int(self.boat_input.text) > 500):
-            self.app.boatCount = 500
+        elif (int(self.boat_input.text) > 50):
+            self.app.boatCount = 50
         else:
             self.app.boatCount = int(self.boat_input.text)
         self.rock_input.text = str(self.app.rockCount)

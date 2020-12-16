@@ -8,7 +8,7 @@ training_outputs = [[1],[0],[1],[0],[-1],[0],[0],[0],[-1],[-1],[1],[1],[-1],[-1]
 
 class MyAI:
     def __init__(self):
-        self.count = 2000
+        self.count = 5000
         self.model = self.create_model()
         self.create_input()
         self.create_output()
@@ -51,7 +51,7 @@ class MyAI:
         return model
 
     def train_model(self, data):
-        self.model.fit(data[0], data[1], epochs=2, batch_size=32, shuffle=True)
+        self.model.fit(data[0], data[1], epochs=1, batch_size=32, shuffle=True)
 
     def predict(self, data):
         data = np.array(data).reshape(1, 5)
