@@ -1,5 +1,6 @@
 # Importovani
 from kivy.app import App
+from kivy.config import Config
 from kivy.uix.widget import Widget
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
@@ -18,6 +19,7 @@ from ai import MyAI
 # třida Boat vytvoří objekt "lodě" 
 class Boat(Widget):
     id = NumericProperty(0)
+    t = NumericProperty(0)
     velocity_x = NumericProperty(0)
     velocity_y = NumericProperty(0)
     velocity = ReferenceListProperty(velocity_x, velocity_y)
@@ -52,8 +54,9 @@ class PathFinder(FloatLayout):
     boats = ListProperty(None)
     pos_x = NumericProperty(0)
     pos_y = NumericProperty(0)
-    rockCount = NumericProperty(20)
-    boatCount = NumericProperty(5)
+    rockCount = NumericProperty(30)
+    boatCount = NumericProperty(10)
+    data = NumericProperty(4000)
     # na začátku vytvoří určité objekty
     def __init__(self, **kwargs):
         super(PathFinder, self).__init__(**kwargs)
@@ -63,7 +66,7 @@ class PathFinder(FloatLayout):
         self.add_start()
         self.add_finish()
         self.add_boat()
-        self.ai = MyAI()
+        self.ai = MyAI(self.data)
     # vygeneruje náhodnou pozici
     def random_pos(self):
         self.pos_x = random.randint(50,Window.width-50)
@@ -109,6 +112,7 @@ class PathFinder(FloatLayout):
             angle = random.randint(0, 360)
             boat.velocity = Vector(2,0).rotate(angle)
             boat.id = i+1
+            boat.t = random.randint(0,1)
             self.boats.append(boat)
             self.add_widget(boat)
 
@@ -117,7 +121,13 @@ class PathFinder(FloatLayout):
     def validPos(self, x):
         if (self.pos_y<Window.height-100):
             for c in self.rocks:
-                if (math.sqrt((self.pos_x-c.center_x)**2+(self.pos_y-c.center_y)**2)<c.size[0]+10):
+                if (self.finish and math.sqrt((self.pos_x-self.finish.center_x)**2+(self.pos_y-self.finish.center_y)**2)<self.finish.size[0]+10):
+                    self.random_pos()
+                    self.validPos(x)
+                if (self.start and math.sqrt((self.pos_x-self.start.center_x)**2+(self.pos_y-self.start.center_y)**2)<self.start.size[0]+10):
+                    self.random_pos()
+                    self.validPos(x)
+                if (math.sqrt((self.pos_x-c.center_x)**2+(self.pos_y-c.center_y)**2)<c.size[0]+15):
                     self.random_pos()
                     self.validPos(x)
                 elif (x and math.sqrt((self.pos_x-self.start.center_x)**2+(self.pos_y-self.start.center_y)**2)<math.sqrt(Window.height**2+Window.width**2)/2):
@@ -138,7 +148,6 @@ class PathFinder(FloatLayout):
         self.r = 0
         self.l = 0
         self.d = 0
-        self.t = 0
         self.direction = 0
         for c in self.rocks:
             if (math.sqrt((b.center_x +b.velocity_x*10-c.center_x)**2+(b.center_y+b.velocity_y*10-c.center_y)**2)<(c.size[0]+5)/2):
@@ -146,33 +155,35 @@ class PathFinder(FloatLayout):
                 break
             else: self.f = 0
         for c in self.rocks:
-            if (math.sqrt((b.center_x +right[0]*8-c.center_x)**2+(b.center_y+right[1]*8-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +right[0]*10-c.center_x)**2+(b.center_y+right[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
                 self.r = 1
                 break
             else: self.r = 0
         for c in self.rocks:
-            if (math.sqrt((b.center_x +left[0]*8-c.center_x)**2+(b.center_y+left[1]*8-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +left[0]*10-c.center_x)**2+(b.center_y+left[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
                 self.l = 1
                 break
             else: self.l = 0
         # if math.sqrt((self.finish.center_x -(b.center_x+b.velocity_x))**2+(self.finish.center_y-(b.center_y+b.velocity_x))**2)<math.sqrt((self.finish.center_x-b.center_x)**2+(self.finish.center_y-b.center_y)**2):
-        if abs(Vector(b.velocity).angle((self.finish.center_x - b.center_x, self.finish.center_y - b.center_y))) < 20:
+        if abs(Vector(b.velocity).angle((self.finish.center_x - b.center_x, self.finish.center_y - b.center_y))) < 25:
             self.d = 1
         else: self.d = 0
-        print(math.sqrt((self.finish.center_x -(b.center_x+b.velocity_x))**2+(self.finish.center_y-(b.center_y+b.velocity_y))**2)-math.sqrt((self.finish.center_x-b.center_x)**2+(self.finish.center_y-b.center_y)**2))
-        data=[self.t,self.f,self.r,self.l,self.d]
-        print(data)
+        #print(math.sqrt((self.finish.center_x -(b.center_x+b.velocity_x))**2+(self.finish.center_y-(b.center_y+b.velocity_y))**2)-math.sqrt((self.finish.center_x-b.center_x)**2+(self.finish.center_y-b.center_y)**2))
+        data=[b.t,self.f,self.r,self.l,self.d]
         prediction = self.ai.predict(data)
+        #leva
         if prediction == 0:
-            self.t = 0
-            self.dir = 1
-        elif prediction == 2:
-            self.t = 1
             self.dir = -1
+            if self.d:
+                b.t = 1
+        #prava
+        elif prediction == 2:
+            self.dir = 1
+            if self.d:
+                b.t = 0
         else:
             self.dir = 0
-        print(prediction)
-        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(15*self.dir)
+        b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(10*self.dir)
 
 
     # zajišťuje překreslení canvasu při přidávání objektů
@@ -224,19 +235,23 @@ class MainApp(App):
     def build(self):
         self.title = 'PathFinder'
         self.app = PathFinder()
-        rootWindow = GridLayout(cols=6, row_force_default=True, row_default_height=40,spacing=10, padding=20)
+        rootWindow = GridLayout(cols=8, row_force_default=True, row_default_height=40,spacing=10, padding=20)
         self.rock_input = TextInput(text=f"{self.app.rockCount}",multiline=False,font_size=20,input_filter='int')
         rock_label = Label(text="Rocks (1-50): ",font_size=20,color=(0,0,0,1))
         self.boat_input = TextInput(text=f"{self.app.boatCount}",multiline=False,font_size=20,input_filter='int')
         boat_label = Label(text="Boats (1-100): ",font_size=20,color=(0,0,0,1))
         submitBtn = Button(text='submit',on_release=self.submit)
         self.resetBtn = Button(text='reset',on_release=self.reset)
+        self.data_input = TextInput(text=f"{self.app.data}",multiline=False,font_size=20,input_filter='int')
+        data_label = Label(text="Data (1000-10000): ",font_size=20,color=(0,0,0,1))
         rootWindow.add_widget(rock_label)
         rootWindow.add_widget(self.rock_input)
         rootWindow.add_widget(boat_label)
         rootWindow.add_widget(self.boat_input)
         rootWindow.add_widget(submitBtn)
         rootWindow.add_widget(self.resetBtn)
+        rootWindow.add_widget(data_label)
+        rootWindow.add_widget(self.data_input)
         rootWindow.add_widget(self.app)
         Clock.schedule_interval(self.app.update, 1.0/60.0)
         return rootWindow
@@ -261,11 +276,22 @@ class MainApp(App):
 
     # vyresetuje celou aplikaci a vygeneruje znovu nové pozice
     def reset(self,obj):
+        self.submit(1)
         self.app.canvas.clear()
+        if (int(self.data_input.text) < 1000):
+            self.app.data = 1000
+        elif (int(self.data_input.text) > 10000):
+            self.app.data = 10000
+        else:
+            self.app.data = int(self.data_input.text)
+        self.data_input.text = str(self.app.data)
         self.app.__init__()
 
 # spuštění
 if __name__ == "__main__":
-    Window.clearcolor = (0, .8, 1, 1)
-    Window.maximize()
+    Window.clearcolor = (.4, .8, 1, 1)
+    Config.set('graphics', 'width', 1280)
+    Config.set('graphics', 'height', 720)
+    Config.set('graphics', 'resizable', False)
+    Config.write()
     MainApp().run()
