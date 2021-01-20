@@ -170,14 +170,11 @@ class PathFinder(FloatLayout):
         # Nachází-li se nějaká skála před, napravo nebo nalevo od lodi,
         # nastaví se daná proměnná na 1 (True)
         for c in self.rocks:
-            if (math.sqrt((b.center_x +b.velocity_x*10-c.center_x)**2+
-                (b.center_y+b.velocity_y*10-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +b.velocity_x*10-c.center_x)**2+(b.center_y+b.velocity_y*10-c.center_y)**2)<(c.size[0]+5)/2):
                 self.f = 1
-            if (math.sqrt((b.center_x +right[0]*10-c.center_x)**2+
-                (b.center_y+right[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +right[0]*10-c.center_x)**2+(b.center_y+right[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
                 self.r = 1
-            if (math.sqrt((b.center_x +left[0]*10-c.center_x)**2+
-                (b.center_y+left[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
+            if (math.sqrt((b.center_x +left[0]*10-c.center_x)**2+ (b.center_y+left[1]*10-c.center_y)**2)<(c.size[0]+5)/2):
                 self.l = 1
         # Zjištujě zda loď míří k cíli (min pod úhlem 25°)
         if abs(Vector(b.velocity).angle((self.finish.center_x - b.center_x,
@@ -201,8 +198,7 @@ class PathFinder(FloatLayout):
             if self.d:
                 b.t = 0
         # Loď pojede rovně
-        else:
-            dir = 0
+        else: dir = 0
         # Změna směru lodi podle výstupu z modelu
         b.velocity = Vector(b.velocity_x,b.velocity_y).rotate(10*dir)
 

@@ -77,3 +77,31 @@ class MyAI:
         data = np.array(data).reshape(1, 5)
         prediction = self.model(data)
         return np.argmax(prediction[0])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
